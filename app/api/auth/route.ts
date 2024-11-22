@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
-import { sql } from '@vercel/postgres'
 import bcrypt from 'bcrypt'
 import { SignJWT } from 'jose'
 import { nanoid } from 'nanoid'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
 
 const JWT_SECRET = process.env.JWT_SECRET
 
@@ -11,18 +13,19 @@ if (!JWT_SECRET) {
 }
 
 export async function POST(request: Request) {
-  const { email, password } = await request.json()
+  const { userId, password } = await request.json()
 
   try {
-    const result = await sql`
-      SELECT * FROM users WHERE email = ${email}
-    `
+    const user = await prisma.user.findUnique({
+      where: {
+        userId: userId,
+      },
+    })
 
-    if (result.rows.length === 0) {
+    if (!user) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
     }
 
-    const user = result.rows[0]
     const passwordMatch = await bcrypt.compare(password, user.password)
 
     if (!passwordMatch) {
@@ -32,7 +35,7 @@ export async function POST(request: Request) {
     // Create a JWT token
     const token = await new SignJWT({ 
       userId: user.id, 
-      userType: user.user_type 
+      userType: user.userType 
     })
       .setProtectedHeader({ alg: 'HS256' })
       .setJti(nanoid())
@@ -42,7 +45,7 @@ export async function POST(request: Request) {
 
     const response = NextResponse.json({ 
       message: 'Login successful',
-      userType: user.user_type,
+      userType: user.userType,
     })
 
     // Set httpOnly cookie
@@ -59,6 +62,8 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Login error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  } finally {
+    await prisma.$disconnect()
   }
 }
 
