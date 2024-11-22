@@ -18,18 +18,25 @@ export async function middleware(request: NextRequest) {
   try {
     const { payload } = await jwtVerify(token, new TextEncoder().encode(JWT_SECRET))
     
-    // Check user type for admin routes
-    if (request.nextUrl.pathname.startsWith('/admin') && payload.userType !== 'admin') {
+    // Check user type for admin-only routes
+    if (request.nextUrl.pathname.startsWith('/dashboard/batches') && payload.userType !== 'admin') {
       return NextResponse.redirect(new URL('/unauthorized', request.url))
     }
 
-    return NextResponse.next()
+    // Allow access to other dashboard routes for both admin and employee
+    if (request.nextUrl.pathname.startsWith('/dashboard') && 
+        (payload.userType === 'admin' || payload.userType === 'employee')) {
+      return NextResponse.next()
+    }
+
+    // If not authorized, redirect to unauthorized page
+    return NextResponse.redirect(new URL('/unauthorized', request.url))
   } catch (error) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/employee/:path*', '/dashboard/:path*'],
+  matcher: ['/dashboard/:path*'],
 }
 

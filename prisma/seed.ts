@@ -11,6 +11,7 @@ async function main() {
     update: {},
     create: {
       userId: 'admin001',
+      name: 'Bala S Singh',
       password: hashedPassword,
       userType: 'admin',
     },
@@ -21,6 +22,7 @@ async function main() {
     update: {},
     create: {
       userId: 'employee001',
+      name: 'Khaleem',
       password: hashedPassword,
       userType: 'employee',
     },
