@@ -17,9 +17,7 @@ export async function POST(request: Request) {
 
   try {
     const user = await prisma.user.findUnique({
-      where: {
-        userId: userId,
-      },
+      where: { userId },
     })
 
     if (!user) {
@@ -32,7 +30,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
     }
 
-    // Create a JWT token
     const token = await new SignJWT({ 
       userId: user.id, 
       userType: user.userType 
@@ -48,7 +45,6 @@ export async function POST(request: Request) {
       userType: user.userType,
     })
 
-    // Set httpOnly cookie
     response.cookies.set({
       name: 'auth_token',
       value: token,

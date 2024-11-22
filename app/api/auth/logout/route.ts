@@ -11,3 +11,6 @@ export async function POST() {
   return response
 }
 
+// Add this line to handle OPTIONS requests (for CORS preflight)
+export const OPTIONS = () => NextResponse.json({})
+
