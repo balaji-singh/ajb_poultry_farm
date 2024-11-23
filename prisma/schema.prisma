@@ -19,37 +19,40 @@ model User {
 }
 
 model Batch {
-  id        String     @id @default(cuid())
-  name      String
-  startDate DateTime
-  isActive  Boolean    @default(true)
-  expenses  Expense[]
-  incomes   Income[]
-  mortality Mortality[]
+  id            String   @id @default(cuid())
+  name          String
+  startDate     DateTime
+  numberOfBirds Int
+  isActive      Boolean  @default(true)
+  expenses      Expense[]
+  incomes       Income[]
+  mortalities  Mortality[]
 }
 
 model Expense {
-  id          String   @id @default(cuid())
-  date        DateTime @default(now())
-  expenseType String
+  id          Int      @id @default(autoincrement())
+  description String
   amount      Float
+  quantity    Int?
+  date        DateTime
+  category    String
+  batchId     Int
   batch       Batch    @relation(fields: [batchId], references: [id])
-  batchId     String
 }
 
 model Income {
-  id         String   @id @default(cuid())
-  date       DateTime @default(now())
-  incomeType String
-  amount     Float
-  batch      Batch    @relation(fields: [batchId], references: [id])
-  batchId    String
+  id          Int      @id @default(autoincrement())
+  description String
+  amount      Float
+  date        DateTime
+  batchId     Int
+  batch       Batch    @relation(fields: [batchId], references: [id])
 }
 
 model Mortality {
   id        String   @id @default(cuid())
-  date      DateTime @default(now())
+  date      DateTime
   count     Int
   batch     Batch    @relation(fields: [batchId], references: [id])
-  batchId   String
+  batchId   Int
 }
